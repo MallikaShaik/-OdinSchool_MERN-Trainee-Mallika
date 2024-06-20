@@ -1,0 +1,244 @@
+MERN Stack Coding Challenge 1
+
+
+Frontend Implementation
+1. Transactions Table
+HTML Structure:
+
+html
+Copy code
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions Dashboard</title>
+    <!-- Include necessary CSS frameworks or stylesheets here -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Transactions Dashboard</h1>
+        
+        <!-- Month Selection Dropdown -->
+        <label for="monthSelect">Select Month:</label>
+        <select id="monthSelect">
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="March" selected>March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+            <option value="June">June</option>
+            <option value="July">July</option>
+            <option value="August">August</option>
+            <option value="September">September</option>
+            <option value="October">October</option>
+            <option value="November">November</option>
+            <option value="December">December</option>
+        </select>
+        
+        <!-- Search Input -->
+        <input type="text" id="searchInput" placeholder="Search transactions...">
+        
+        <!-- Transactions Table -->
+        <table id="transactionsTable">
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Product Title</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be populated dynamically using JavaScript -->
+            </tbody>
+        </table>
+        
+        <!-- Pagination Buttons -->
+        <div class="pagination">
+            <button id="prevPage">Previous</button>
+            <span id="pageInfo">Page 1</span>
+            <button id="nextPage">Next</button>
+        </div>
+        
+    </div>
+
+    <!-- Include necessary JavaScript libraries or scripts here -->
+    <script src="scripts.js"></script>
+</body>
+</html>
+JavaScript (scripts.js):
+
+javascript
+Copy code
+document.addEventListener('DOMContentLoaded', function() {
+    const monthSelect = document.getElementById('monthSelect');
+    const searchInput = document.getElementById('searchInput');
+    const transactionsTable = document.getElementById('transactionsTable').getElementsByTagName('tbody')[0];
+    const prevPageBtn = document.getElementById('prevPage');
+    const nextPageBtn = document.getElementById('nextPage');
+    const pageInfo = document.getElementById('pageInfo');
+
+    let currentPage = 1;
+    let totalPages = 1;
+
+    // Function to fetch transactions based on month and search query
+    async function fetchTransactions(month, searchQuery, page) {
+        const url = `/api/transactions?month=${month}&search=${searchQuery}&page=${page}`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching transactions:', error);
+            return { transactions: [], total: 0 };
+        }
+    }
+
+    // Function to update table with fetched transactions
+    function updateTable(transactions) {
+        transactionsTable.innerHTML = ''; // Clear existing rows
+        transactions.forEach(transaction => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${transaction.transactionId}</td>
+                <td>${transaction.productTitle}</td>
+                <td>${transaction.description}</td>
+                <td>${transaction.price}</td>
+            `;
+            transactionsTable.appendChild(row);
+        });
+    }
+
+    // Function to handle search input
+    function handleSearchInput() {
+        const month = monthSelect.value;
+        const searchQuery = searchInput.value.trim();
+        currentPage = 1; // Reset to first page when searching
+        fetchAndRenderTransactions(month, searchQuery);
+    }
+
+    // Function to handle pagination
+    function handlePagination(direction) {
+        if (direction === 'next' && currentPage < totalPages) {
+            currentPage++;
+        } else if (direction === 'prev' && currentPage > 1) {
+            currentPage--;
+        }
+        const month = monthSelect.value;
+        const searchQuery = searchInput.value.trim();
+        fetchAndRenderTransactions(month, searchQuery);
+    }
+
+    // Function to fetch and render transactions based on current filters
+    async function fetchAndRenderTransactions(month, searchQuery) {
+        const data = await fetchTransactions(month, searchQuery, currentPage);
+        updateTable(data.transactions);
+        totalPages = Math.ceil(data.total / 10); // Assuming per page = 10
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    }
+
+    // Initial load with default month (March) and empty search query
+    fetchAndRenderTransactions('March', '');
+
+    // Event listeners
+    monthSelect.addEventListener('change', () => {
+        const month = monthSelect.value;
+        const searchQuery = searchInput.value.trim();
+        currentPage = 1; // Reset to first page when month changes
+        fetchAndRenderTransactions(month, searchQuery);
+    });
+
+    searchInput.addEventListener('input', handleSearchInput);
+
+    prevPageBtn.addEventListener('click', () => handlePagination('prev'));
+    nextPageBtn.addEventListener('click', () => handlePagination('next'));
+});
+2. Transactions Statistics
+Display total sale amount, total sold items, and total not sold items for the selected month using the /api/statistics API.
+
+HTML:
+
+html
+Copy code
+<div class="statistics">
+    <h2>Statistics for Selected Month</h2>
+    <div id="statisticsBox">
+        <!-- Statistics will be populated dynamically using JavaScript -->
+    </div>
+</div>
+JavaScript (scripts.js - within fetchAndRenderTransactions function):
+
+javascript
+Copy code
+// Function to fetch and render statistics for selected month
+async function fetchAndRenderStatistics(month) {
+    const url = `/api/statistics?month=${month}`;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        renderStatistics(data);
+    } catch (error) {
+        console.error('Error fetching statistics:', error);
+    }
+}
+
+// Function to render statistics in UI
+function renderStatistics(data) {
+    const statisticsBox = document.getElementById('statisticsBox');
+    statisticsBox.innerHTML = `
+        <p>Total Sale Amount: ${data.total_sale_amount}</p>
+        <p>Total Sold Items: ${data.total_sold_items}</p>
+        <p>Total Not Sold Items: ${data.total_not_sold_items}</p>
+    `;
+}
+
+// Call fetchAndRenderStatistics with default month (March)
+fetchAndRenderStatistics('March');
+3. Transactions Bar Chart
+Display bar chart for price ranges and number of items in each range for the selected month using the /api/bar-chart API.
+
+HTML:
+
+html
+Copy code
+<div class="chart">
+    <h2>Transactions Bar Chart</h2>
+    <canvas id="barChart"></canvas>
+</div>
+JavaScript (scripts.js - within fetchAndRenderTransactions function):
+
+javascript
+Copy code
+// Function to fetch and render bar chart data
+async function fetchAndRenderBarChart(month) {
+    const url = `/api/bar-chart?month=${month}`;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        renderBarChart(data);
+    } catch (error) {
+        console.error('Error fetching bar chart data:', error);
+    }
+}
+
+// Function to render bar chart using Chart.js library
+function renderBarChart(data) {
+    const barChartCanvas = document.getElementById('barChart').getContext('2d');
+    const priceRanges = Object.keys(data);
+    const itemCounts = Object.values(data);
+
+    new Chart(barChartCanvas, {
+        type: 'bar',
+        data: {
+           
