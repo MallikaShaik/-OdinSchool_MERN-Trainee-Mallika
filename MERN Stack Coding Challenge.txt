@@ -1,0 +1,93 @@
+MERN Stack Coding Challenge
+
+Backend TASK:
+
+Step 1: Initialize Database from Third-Party API
+Assuming you're using a relational database like PostgreSQL, MongoDB, or similar, here are the steps:
+
+Database Schema Design:
+
+Create tables/collections based on the JSON structure from the third-party API. Typically, you'd have entities like Product and Transaction.
+Data Fetching and Initialization:
+
+Fetch data from the third-party API (https://s3.amazonaws.com/roxiler.com/product_transaction.json).
+Parse the JSON and insert relevant data into your database.
+Step 2: Implement APIs
+API 1: List All Transactions
+Endpoint: /api/transactions
+Method: GET
+Parameters:
+month (String): The name of the month (e.g., "January", "February", etc.)
+search (String): Optional search text for filtering by product title, description, or price.
+page (Integer): Page number for pagination (default: 1)
+per_page (Integer): Number of items per page (default: 10)
+API 2: Statistics for Selected Month
+Endpoint: /api/statistics
+Method: GET
+Parameters:
+month (String): The name of the month (e.g., "January", "February", etc.)
+API 3: Bar Chart Data for Price Ranges
+Endpoint: /api/bar-chart
+Method: GET
+Parameters:
+month (String): The name of the month (e.g., "January", "February", etc.)
+API 4: Pie Chart Data for Categories
+Endpoint: /api/pie-chart
+Method: GET
+Parameters:
+month (String): The name of the month (e.g., "January", "February", etc.)
+API 5: Combined Response from All APIs
+Endpoint: /api/combined-data
+Method: GET
+This API should internally call and aggregate data from APIs 2, 3, and 4.
+
+Implementation Details
+Pagination: Use query parameters (page and per_page) to implement pagination in API 1.
+Search: Implement search functionality in API 1 based on the search parameter, searching across product title, description, and price.
+Database Operations: Use ORM (Object-Relational Mapping) tools or raw SQL queries to interact with the database.
+Data Processing: Calculate statistics (total sales amount, sold items, not sold items), bar chart data (price ranges), and pie chart data (categories) based on the filtered month.
+Response Format: Ensure APIs return JSON responses formatted as per the requirements.
+Example Response Formats
+List All Transactions:
+
+json
+Copy code
+{
+  "transactions": [...], // Array of transaction objects
+  "total": 100 // Total number of transactions (for pagination)
+}
+Statistics for Selected Month:
+
+json
+Copy code
+{
+  "total_sale_amount": 5000,
+  "total_sold_items": 50,
+  "total_not_sold_items": 10
+}
+Bar Chart Data for Price Ranges:
+
+json
+Copy code
+{
+  "0-100": 20,
+  "101-200": 30,
+  // Other price ranges
+}
+Pie Chart Data for Categories:
+
+json
+Copy code
+{
+  "Category X": 20,
+  "Category Y": 15,
+  // Other categories
+}
+Combined Response:
+This would aggregate responses from APIs 2, 3, and 4 into a single JSON response.
+
+Conclusion
+Ensure error handling, validation of input parameters, and efficient querying of the database to meet performance requirements. Depending on your stack (Node.js, Python Flask/Django, etc.), use appropriate libraries for HTTP handling, ORM, and JSON serialization. This structured approach should help you implement the backend APIs effectively.
+
+
+
